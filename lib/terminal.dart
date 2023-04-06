@@ -6,12 +6,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:statewithease/statewithease.dart';
 import 'output.dart';
 import 'terminal_theme.dart';
-import 'terminal_widgets/colored_text.dart';
-import 'terminal_widgets/command.dart';
-import 'terminal_widgets/input_row.dart';
-import 'terminal_widgets/pomodoro_timer.dart';
-import 'terminal_widgets/terminal_table.dart';
-import 'terminal_widgets/tree_view.dart';
+import 'terminal_widgets/widgets.dart';
 
 class TerminalState {
   const TerminalState(this.contents, this.channel);
