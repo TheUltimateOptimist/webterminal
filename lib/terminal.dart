@@ -1,12 +1,9 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 // ignore: depend_on_referenced_packages
 import 'package:statewithease/statewithease.dart';
-import 'output.dart';
 import 'terminal_theme.dart';
-import 'terminal_widgets/widgets.dart';
+import 'terminal_widgets/widgets.dart' show getTerminalWidget, InputRow, Command;
 
 class TerminalState {
   const TerminalState(this.contents, this.channel);
@@ -32,7 +29,7 @@ class Terminal extends StatelessWidget {
       child: StateProvider<TerminalState>(
         TerminalState(List.empty(growable: true), channel),
         mapperStream: channel.stream.map((event) => (state) {
-              state.contents.add(getDisplayWidget(event));
+              state.contents.add(getTerminalWidget(event));
               return TerminalState(state.contents, channel);
             }),
         child: StateBuilder<TerminalState>(
@@ -50,31 +47,18 @@ class Terminal extends StatelessWidget {
                 } else {
                   widget = state.contents[index];
                 }
-                return Container(margin: EdgeInsets.only(top: TerminalTheme.of(context).lineSpacing, left: TerminalTheme.of(context).leftSpacing), child: widget);
+                return Container(
+                  margin: EdgeInsets.only(
+                    top: TerminalTheme.of(context).lineSpacing,
+                    left: TerminalTheme.of(context).leftSpacing,
+                  ),
+                  child: widget,
+                );
               },
             );
           },
         ),
       ),
     );
-  }
-}
-
-Widget getDisplayWidget(String response) {
-  final map = jsonDecode(response) as Map<String, dynamic>;
-  final outputType = Output.fromString(map["code"]);
-  switch (outputType) {
-    case Output.empty:
-      return const SizedBox(); //empty
-    case Output.error:
-      return ColoredText(map["content"], color: Colors.red); //error message
-    case Output.text:
-      return ColoredText(map["content"]);
-    case Output.table:
-      return TerminalTable(map["content"]["title"], map["content"]["data"]);
-    case Output.tree:
-      return TreeView(map["content"]);
-    case Output.pomodoro:
-      return PomodoroTimer(map["content"]);
   }
 }
