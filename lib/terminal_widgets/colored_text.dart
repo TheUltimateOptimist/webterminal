@@ -10,9 +10,13 @@ class ColoredText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: TerminalTheme.of(context).inputStyle.copyWith(color: color),
+    final style = TerminalTheme.of(context).inputStyle.copyWith(color: color);
+    return SizedBox(
+      height: style.fontSize,//for some reason the text is twice as large if not constrained with sized box to the font size
+      child: Text(
+        text,
+        style: style,
+      ),
     );
   }
 }
