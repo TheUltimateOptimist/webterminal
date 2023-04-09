@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   web_socket_channel: ^2.3.0
   google_fonts: ^4.0.3
+  firebase_auth: ^4.4.0
+  firebase_core: ^2.9.0
 
 dev_dependencies:
   flutter_test:
@@ -44,6 +46,7 @@ dev_dependencies:
   statewithease:
     git:
       url: https://github.com/TheUltimateOptimist/statewithease.git
+
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
