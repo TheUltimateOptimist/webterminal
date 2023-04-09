@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:statewithease/statewithease.dart';
 import 'package:flutter/services.dart';
 
-import '../terminal.dart';
 import '../terminal_theme.dart';
-import 'command.dart';
 
 class InputRow extends StatefulWidget {
-  const InputRow({super.key});
+  const InputRow({super.key, this.prefix, required this.onEnterPressed, this.isVisible = true, this.maxLines = 1});
+
+  final Widget? prefix;
+  final void Function(BuildContext context, String input) onEnterPressed;
+  final bool isVisible;
+  final int? maxLines;
 
   @override
   State<InputRow> createState() => _InputRowState();
@@ -20,18 +22,22 @@ class _InputRowState extends State<InputRow> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Command(),
+        if (widget.prefix != null) widget.prefix!,
         Expanded(
           child: KeyboardListener(
             focusNode: FocusNode(),
             onKeyEvent: (value) {
               const enterId = 0x10000000d;
-              if (value is KeyUpEvent && value.logicalKey.keyId == enterId) {
-                context.collectOne(commandEntered, controller.text);
+              if (value is KeyUpEvent && value.logicalKey.keyId == enterId && widget.maxLines != 1) {
+                widget.onEnterPressed(context, controller.text);
               }
             },
             child: EditableText(
-              maxLines: null,
+              onSubmitted: (text) {
+                widget.onEnterPressed(context, controller.text);
+              },
+              obscureText: !widget.isVisible,
+              maxLines: widget.maxLines,
               autofocus: true,
               controller: controller,
               backgroundCursorColor: Colors.black,
