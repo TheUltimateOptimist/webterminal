@@ -15,21 +15,21 @@ export 'pomodoro_timer.dart';
 export 'terminal_table.dart';
 export 'tree_view.dart';
 
-Widget getTerminalWidget(String response) {
-  final map = jsonDecode(response) as Map<String, dynamic>;
-  final outputType = Output.fromString(map["code"]);
+Widget getTerminalWidget(Output outputType, dynamic content) {
   switch (outputType) {
     case Output.empty:
       return const SizedBox(); //empty
     case Output.error:
-      return ColoredText(map["content"], color: Colors.red); //error message
+      return ColoredText(content, color: Colors.red); //error message
     case Output.text:
-      return ColoredText(map["content"]);
+      return ColoredText(content);
     case Output.table:
-      return TerminalTable(map["content"]["title"], map["content"]["data"]);
+      return TerminalTable(content["title"], content["data"]);
     case Output.tree:
-      return TreeView(map["content"]);
+      return TreeView(content);
     case Output.pomodoro:
-      return PomodoroTimer(map["content"]);
+      return PomodoroTimer(content);
+    case Output.logout:
+      throw Exception("The Output.logout case should have been covered at this point");
   }
 }

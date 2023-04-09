@@ -338,7 +338,7 @@ packages:
     description:
       path: "."
       ref: HEAD
-      resolved-ref: "92937c7d3436b86cbdad19ae941aa3512f687b7a"
+      resolved-ref: "0e8150907d66077ede285880d854fea97872a3b2"
       url: "https://github.com/TheUltimateOptimist/statewithease.git"
     source: git
     version: "1.0.0"

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -6,6 +7,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:statewithease/statewithease.dart';
 import 'package:webterminal/helper_widgets/custom_icon_button.dart';
 import 'package:webterminal/terminal_widgets/colored_text.dart';
+import 'output.dart';
 import 'terminal_theme.dart';
 import 'terminal_widgets/widgets.dart' show getTerminalWidget, InputRow, Command;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,14 +58,25 @@ Future<TerminalState> passwordEntered(TerminalState old, String email, String pa
   }
 }
 
-StateStream<TerminalState> getTerminalWidgetStream() {
-  final channel = WebSocketChannel.connect(Uri.parse("ws://localhost:3000/terminal"));
+Future<StateStream<TerminalState>> connectToSocket(TerminalState old) async {
+  final idToken = await old.user!.getIdToken();
+  final channel = WebSocketChannel.connect(Uri.parse("ws://localhost:3000/terminal/$idToken"));
   return StateStream<TerminalState>(
     stream: channel.stream.map(
       (response) => (state) {
-        state.contents.add(getTerminalWidget(response));
-        state.contents.add(const CommandInputRow());
-        return TerminalState(state.contents, state.channel, state.user);
+          final map = jsonDecode(response) as Map<String, dynamic>;
+          final outputType = Output.fromString(map["code"]);
+        if(outputType == Output.logout){
+          FirebaseAuth.instance.signOut();
+          state.contents.add(const EmailInputRow());
+          return TerminalState(state.contents, state.channel, null);
+        }
+        else{
+          state.contents.add(getTerminalWidget(outputType, map["content"]));
+          state.contents.add(const CommandInputRow());
+          return TerminalState(state.contents, state.channel, state.user);
+
+        }
       },
     ),
     assign: (state, subscription) {
@@ -82,11 +95,15 @@ class Terminal extends StatelessWidget {
       color: TerminalTheme.of(context).backgroundColor,
       child: StateProvider<TerminalState>(
         TerminalState.initial(),
-        stateStreams: FirebaseAuth.instance.currentUser != null ? [getTerminalWidgetStream()] : [],
+        postFirstBuild: (context, state) {
+          if(state.user != null){
+            context.collectFutureStateStream(connectToSocket);
+          } 
+        },
         child: StateListener<TerminalState>(
           listenWhen: (previous, current) => previous.user == null && current.user != null,
           listener: (context, state) {
-            context.collectStateStream((state) => getTerminalWidgetStream());
+            context.collectFutureStateStream(connectToSocket);
           },
           child: StateBuilder<TerminalState>(
             builder: (p0, state) {
