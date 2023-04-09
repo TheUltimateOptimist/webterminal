@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../helper_widgets/custom_icon_button.dart';
 import '../terminal_theme.dart';
 
 class PomodoroTimer extends StatefulWidget {
@@ -99,29 +100,6 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
           },
         )
       ],
-    );
-  }
-}
-
-class CustomIconButton extends StatelessWidget {
-  const CustomIconButton(this.icon, {super.key, required this.onPressed});
-
-  final void Function() onPressed;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = TerminalTheme.of(context).inputStyle;
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: onPressed,
-        child: Icon(
-          icon,
-          color: style.color,
-          size: style.fontSize,
-        ),
-      ),
     );
   }
 }
