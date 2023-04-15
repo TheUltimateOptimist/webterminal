@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'dart:html';
 import 'package:flutter/material.dart';
 
 import '../output.dart';
@@ -30,6 +30,10 @@ Widget getTerminalWidget(Output outputType, dynamic content) {
     case Output.pomodoro:
       return PomodoroTimer(content);
     case Output.logout:
-      throw Exception("The Output.logout case should have been covered at this point");
+      throw Exception(
+          "The Output.logout case should have been covered at this point");
+    case Output.url:
+      window.open(content, "generated");
+      return const SizedBox();
   }
 }

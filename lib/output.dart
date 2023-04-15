@@ -5,7 +5,8 @@ enum Output {
   table(203),
   tree(204),
   pomodoro(205),
-  logout(206);
+  logout(206),
+  url(207);
 
   final int code;
   const Output(this.code);
@@ -26,6 +27,8 @@ enum Output {
         return Output.pomodoro;
       case 206:
         return Output.logout;
+      case 207:
+        return Output.url;
       default:
         throw Exception("invalid code");
     }
