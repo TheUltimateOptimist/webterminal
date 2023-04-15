@@ -9,7 +9,8 @@ import 'package:webterminal/helper_widgets/custom_icon_button.dart';
 import 'package:webterminal/terminal_widgets/colored_text.dart';
 import 'output.dart';
 import 'terminal_theme.dart';
-import 'terminal_widgets/widgets.dart' show getTerminalWidget, InputRow, Command;
+import 'terminal_widgets/widgets.dart'
+    show getTerminalWidget, InputRow, Command;
 import 'package:firebase_auth/firebase_auth.dart';
 
 class TerminalState {
@@ -44,11 +45,13 @@ TerminalState emailEntered(TerminalState old, String email) {
   return TerminalState(old.contents, old.channel, old.user);
 }
 
-Future<TerminalState> passwordEntered(TerminalState old, String email, String password) async {
+Future<TerminalState> passwordEntered(
+    TerminalState old, String email, String password) async {
   old.contents.removeLast();
   old.contents.add(ColoredText("Password: ${'•' * password.length}"));
   try {
-    final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(email: email, password: password);
+    final userCredential = await FirebaseAuth.instance
+        .signInWithEmailAndPassword(email: email, password: password);
     old.contents.add(const CommandInputRow());
     return TerminalState(old.contents, old.channel, userCredential.user);
   } on FirebaseAuthException catch (error) {
@@ -60,23 +63,25 @@ Future<TerminalState> passwordEntered(TerminalState old, String email, String pa
 
 Future<StateStream<TerminalState>> connectToSocket(TerminalState old) async {
   final idToken = await old.user!.getIdToken();
-  final channel = WebSocketChannel.connect(Uri.parse("ws://localhost:3000/terminal/$idToken"));
+  final channel = WebSocketChannel.connect(
+      Uri.parse("ws://localhost:3000/terminal/$idToken"));
   return StateStream<TerminalState>(
     stream: channel.stream.map(
       (response) => (state) {
-          final map = jsonDecode(response) as Map<String, dynamic>;
-          final outputType = Output.fromString(map["code"]);
-        if(outputType == Output.logout){
-          FirebaseAuth.instance.signOut();
-          state.contents.add(const EmailInputRow());
-          return TerminalState(state.contents, state.channel, null);
+        final outputs = jsonDecode(response) as List<dynamic>;
+        for (final output in outputs) {
+          final outputType = Output.fromString(output["code"]);
+          if (outputType == Output.logout) {
+            FirebaseAuth.instance.signOut();
+            state.contents.add(const EmailInputRow());
+            return TerminalState(state.contents, state.channel, null);
+          } else {
+            state.contents
+                .add(getTerminalWidget(outputType, output["content"]));
+          }
         }
-        else{
-          state.contents.add(getTerminalWidget(outputType, map["content"]));
-          state.contents.add(const CommandInputRow());
-          return TerminalState(state.contents, state.channel, state.user);
-
-        }
+        state.contents.add(const CommandInputRow());
+        return TerminalState(state.contents, state.channel, state.user);
       },
     ),
     assign: (state, subscription) {
@@ -96,12 +101,13 @@ class Terminal extends StatelessWidget {
       child: StateProvider<TerminalState>(
         TerminalState.initial(),
         postFirstBuild: (context, state) {
-          if(state.user != null){
+          if (state.user != null) {
             context.collectFutureStateStream(connectToSocket);
-          } 
+          }
         },
         child: StateListener<TerminalState>(
-          listenWhen: (previous, current) => previous.user == null && current.user != null,
+          listenWhen: (previous, current) =>
+              previous.user == null && current.user != null,
           listener: (context, state) {
             context.collectFutureStateStream(connectToSocket);
           },
