@@ -18,12 +18,19 @@ class TreeView extends StatelessWidget {
 
   final Map<String, dynamic> node;
 
-  void addTreeRows(List<TreeRow> treeRows, Map<String, dynamic> node, int depth) {
-    treeRows.add(TreeRow(node["name"], depth));
+  void addTreeRows(
+      List<TreeRow> treeRows, Map<String, dynamic> node, int depth) {
+    final nameNotNone = node["name"] != null;
+    if (nameNotNone) {
+      treeRows.add(TreeRow(node["name"], depth));
+    }
     final children = node["children"];
     if (children != null) {
+      if (nameNotNone) {
+        depth += 1;
+      }
       for (final child in children) {
-        addTreeRows(treeRows, child, depth + 1);
+        addTreeRows(treeRows, child, depth);
       }
     }
   }
@@ -38,7 +45,9 @@ class TreeView extends StatelessWidget {
       children: [
         for (final treeRow in treeRows)
           Container(
-            margin: EdgeInsets.only(top: TerminalTheme.of(context).lineSpacing, left: identation * treeRow.depth),
+            margin: EdgeInsets.only(
+                top: TerminalTheme.of(context).lineSpacing,
+                left: identation * treeRow.depth),
             child: Text(
               treeRow.name,
               style: TerminalTheme.of(context).inputStyle,
