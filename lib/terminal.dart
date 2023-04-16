@@ -69,13 +69,17 @@ Future<StateStream<TerminalState>> connectToSocket(TerminalState old) async {
     stream: channel.stream.map(
       (response) => (state) {
         final outputs = jsonDecode(response) as List<dynamic>;
+        if (state.contents.isNotEmpty &&
+            state.contents.last is CommandInputRow) {
+          state.contents.removeLast();
+        }
         for (final output in outputs) {
           final outputType = Output.fromString(output["code"]);
           if (outputType == Output.logout) {
             FirebaseAuth.instance.signOut();
             state.contents.add(const EmailInputRow());
             return TerminalState(state.contents, state.channel, null);
-          } else {
+          } else if (outputType != Output.empty) {
             state.contents
                 .add(getTerminalWidget(outputType, output["content"]));
           }

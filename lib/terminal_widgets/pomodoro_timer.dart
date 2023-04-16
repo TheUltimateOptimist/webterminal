@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:webterminal/terminal.dart';
 
 import '../helper_widgets/custom_icon_button.dart';
 import '../terminal_theme.dart';
+import 'package:statewithease/statewithease.dart';
 
 class PomodoroTimer extends StatefulWidget {
   const PomodoroTimer(this.config, {super.key});
@@ -16,6 +18,7 @@ class PomodoroTimer extends StatefulWidget {
 
 class _PomodoroTimerState extends State<PomodoroTimer> {
   late final Timer timer;
+  late final double start;
   late int remainingSeconds;
   bool isPause = false;
   bool isStopped = false;
@@ -24,6 +27,7 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
   @override
   void initState() {
     remainingSeconds = widget.config["duration"];
+    start = DateTime.now().millisecondsSinceEpoch / 1000;
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (isStopped) return;
       if (remainingSeconds > 0) {
@@ -35,6 +39,9 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
         timer.cancel();
       }
       if (remainingSeconds == 0 && !isPause) {
+        final command =
+            "sessions add ${widget.config['topic_id']} $start ${widget.config['duration']}";
+        context.read<TerminalState>().channel!.sink.add(command);
         setState(() {
           isPause = true;
           remainingSeconds = widget.config["pause"];
@@ -47,8 +54,12 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
   String formatSeconds(int seconds) {
     int minutes = seconds ~/ 60; // get the whole number of minutes
     int remainingSeconds = seconds % 60; // get the remaining seconds
-    String formattedMinutes = minutes < 10 ? '0$minutes' : '$minutes'; // add a leading zero if necessary
-    String formattedSeconds = remainingSeconds < 10 ? '0$remainingSeconds' : '$remainingSeconds'; // add a leading zero if necessary
+    String formattedMinutes = minutes < 10
+        ? '0$minutes'
+        : '$minutes'; // add a leading zero if necessary
+    String formattedSeconds = remainingSeconds < 10
+        ? '0$remainingSeconds'
+        : '$remainingSeconds'; // add a leading zero if necessary
     return '$formattedMinutes:$formattedSeconds'; // return the formatted time string
   }
 
@@ -78,17 +89,17 @@ class _PomodoroTimerState extends State<PomodoroTimer> {
             color: Colors.green,
             fontWeight: FontWeight.bold,
           ),
-        ),if(!isPause)
-        spacer,
-        if(!isPause)
-        CustomIconButton(
-          isStopped ? Icons.play_arrow_rounded : Icons.pause,
-          onPressed: () {
-            setState(() {
-              isStopped = !isStopped;
-            });
-          },
         ),
+        if (!isPause) spacer,
+        if (!isPause)
+          CustomIconButton(
+            isStopped ? Icons.play_arrow_rounded : Icons.pause,
+            onPressed: () {
+              setState(() {
+                isStopped = !isStopped;
+              });
+            },
+          ),
         spacer,
         CustomIconButton(
           Icons.stop,

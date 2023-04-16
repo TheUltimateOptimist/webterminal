@@ -18,7 +18,8 @@ export 'tree_view.dart';
 Widget getTerminalWidget(Output outputType, dynamic content) {
   switch (outputType) {
     case Output.empty:
-      return const SizedBox(); //empty
+      throw Exception(
+          "The Output.empty case should have been covered at this point");
     case Output.error:
       return ColoredText(content, color: Colors.red); //error message
     case Output.text:
